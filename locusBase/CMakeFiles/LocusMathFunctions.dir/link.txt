@@ -1,2 +1,0 @@
-/usr/bin/ar qc libLocusMathFunctions.a CMakeFiles/LocusMathFunctions.dir/LocusMathFunctions.cpp.o
-/usr/bin/ranlib libLocusMathFunctions.a
