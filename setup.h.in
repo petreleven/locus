@@ -1,0 +1,2 @@
+#define DDesign_VERSION_MAJOR @DDesign_VERSION_MAJOR@
+#define DDesign_VERSION_MINOR @DDesign_VERSION_MINOR@
