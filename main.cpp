@@ -1,27 +1,20 @@
-#include "Core.h"
-#include "LocusMathFunctions.h"
+#include "locusBase/Core.h"
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
 #include <raylib.h>
-#include <vector>
 int main() {
-
-  std::vector<locus::Point> setOfPoints;
-  for (size_t i = 0; i < 60; i++) {
-    locus::Point p;
-    locus::real x = 100 + rand() % 700;
-    locus::real y = 50 + rand() % 300;
-    p.x = x;
-    p.y = y;
-    p.z = 0.f;
-    setOfPoints.push_back(p);
-  }
-  uint32_t bestIndex = locusMath::LMathFunctions::pointFarthestFromEdge(
-      setOfPoints[2], setOfPoints[4], setOfPoints);
-
+    locus::Vector3 p(400, 0, 0);
+    locus::real angle = DEG2RAD * 45 ;
+    locus::Vector3 v(0, 0, 1);
+    locus::Quaternion q(cos(angle/2), v.x*sin(angle/2), v.y*sin(angle/2), v.z*sin(angle/2));
+    q.normalize();
+    locus::Quaternion newPasQ = q * locus::Quaternion(0, p.x, p.y, p.z) * locus::Quaternion(q.r, -q.i, -q.j, -q.k);
+    locus::Vector3 newPV(newPasQ.i, newPasQ.j, newPasQ.k);
+    std::cout<<"x:"<<newPV.x<<" y:"<<newPV.y<<" z:"<<newPV.z<<"\n";
   // Initialization
   //--------------------------------------------------------------------------------------
   const int screenWidth = 800;
@@ -43,17 +36,12 @@ int main() {
     // Draw
     //----------------------------------------------------------------------------------
     BeginDrawing();
+    DrawLine(0, 0, p.x, p.y, GREEN);
+    DrawLine(0, 0, newPV.x, newPV.y, RED);
+    DrawCircle(p.x, p.y, 10, GREEN);
+    DrawCircle(newPV.x, newPV.y, 10, RED);
 
     ClearBackground(Color{26, 26, 29});
-    for (size_t i = 0; i < setOfPoints.size(); i++) {
-      DrawCircleV({setOfPoints[i].x, setOfPoints[i].y}, 10,
-                  Color{166, 77, 121, 255});
-    }
-
-    DrawLineV({setOfPoints[2].x, setOfPoints[2].y},
-              {setOfPoints[4].x, setOfPoints[4].y}, WHITE);
-    DrawCircleV({setOfPoints[bestIndex].x, setOfPoints[bestIndex].y}, 5,
-        GREEN);
     EndDrawing();
     //----------------------------------------------------------------------------------
   }
