@@ -1,24 +1,44 @@
 #include "RigidBody.h"
 #include "Core.h"
-
+#include <cstdint>
 namespace locusBody {
-//called on the body to set its parameters i.e
-// orientaion normalizing
-// tx matrix
-// Inverse Inertia Tensor in world coordinates
+using locus::Vector3;
+
+void RigidBody::integrate(real duration) {
+  // linear_acceleration=f * invMass
+  Vector3 linearAcc = forceAccum * inverseMass;
+  // v = v + at
+  linearVelocity = linearVelocity * linearDamping + linearAcc * duration;
+  // p = p + vt
+  position += linearVelocity * duration;
+  // angular_acc = InvInertia . Torque;
+  Vector3 angularAcc = inverseInertiaTensorWorld * torqueAccum;
+  angularVelocity = angularVelocity * angularDamping + angularAcc * duration;
+  orientation.addScaledVector(angularVelocity, duration);
+  clearAccumulators();
+  calculateDerivedData();
+}
+
+void RigidBody::clearAccumulators() {
+  forceAccum.x = 0;
+  forceAccum.y = 0;
+  forceAccum.z = 0;
+  torqueAccum.x = 0;
+  torqueAccum.y = 0;
+  torqueAccum.z = 0;
+}
 void RigidBody::calculateDerivedData() {
   orientation.normalize();
   transformationMatrix.setOrientation(orientation, position);
-  _calculateInverseInetiaTensorWorld(inverseInertiaTensorWorld, transformationMatrix, inverseInertiaTensorLocal);
+  _calculateInverseInetiaTensorWorld(inverseInertiaTensorWorld,
+                                     transformationMatrix,
+                                     inverseInertiaTensorLocal);
 }
-
 
 void RigidBody::setInverseInertiaTensorLocal(const Matrix3 &inertiaTensor) {
   inverseInertiaTensorLocal.setInverse(inertiaTensor);
 }
 
-// rotMatrix . inverseInerialLocal * rotMxtrixInv;
-// think of it like qvq* from quaternion
 inline void RigidBody::_calculateInverseInetiaTensorWorld(
     Matrix3 &inverseInertiaTensorWorld, const Matrix4 &transformationMatrix,
     const Matrix3 &inverseInertiaTensorLocal) {
@@ -102,6 +122,37 @@ inline void RigidBody::_calculateInverseInetiaTensorWorld(
   inverseInertiaTensorWorld.data[6] = data[6];
   inverseInertiaTensorWorld.data[7] = data[7];
   inverseInertiaTensorWorld.data[8] = data[8];
+}
+
+void RigidBody::addForce(const Vector3 &force) { forceAccum += force; }
+
+void RigidBody::addForceAtBodyPoint(const Vector3 &force,
+                                    const Vector3 &point) {
+  Vector3 pointWorldSpace = getPointWorld(point);
+  addForceAtPoint(force, pointWorldSpace);
+}
+
+void RigidBody::addForceAtPoint(const Vector3 &force, const Vector3 &point) {
+  // t = pt * f
+  Vector3 pt = point;
+  pt -= position;
+  torqueAccum += LMathFunctions::CrossProduct(pt, force);
+  forceAccum += force;
+}
+
+int8_t RigidBody::hasInfiniteMass() const {
+  if (inverseMass <= 0.001f) {
+    return 1;
+  }
+  return 0;
+}
+
+Vector3 RigidBody::getPointWorld(const Vector3 &localpos) const {
+  return transformationMatrix.localToWorld(localpos, transformationMatrix);
+}
+
+Vector3 RigidBody::getPointLocal(const Vector3 &worldpos) const {
+  return transformationMatrix.worldToLocal(worldpos, transformationMatrix);
 }
 
 } // namespace locusBody

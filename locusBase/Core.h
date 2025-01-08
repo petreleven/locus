@@ -8,8 +8,6 @@
 namespace locus {
 typedef float real;
 real EPSILON = 1e-6f;
-class Matrix4;
-class Matrix3;
 class Vector3 {
 public:
   real x;
@@ -30,7 +28,12 @@ public:
     y += v.y;
     z += v.z;
   }
-  Vector3 operator+(locus::real &sc) {
+  Vector3 operator+(const Vector3 &v) {
+    return Vector3(x + v.x,
+    y + v.y,
+    z + v.z);
+  }
+  Vector3 operator+=(locus::real &sc) {
     x += sc;
     y += sc;
     z += sc;
@@ -38,14 +41,11 @@ public:
   }
 
   // SUBSTRACT FROM THIS
-  void operator-=(const Vector3 &v) {
+  Vector3 &operator-=(const Vector3 &v) {
     x -= v.x;
     y -= v.y;
     z -= v.z;
-  }
-  // SUUBSTRACT AND RETURN NEW Vec3
-  Vector3 operator-(const Vector3 v) const {
-    return Vector3(x - v.x, y - v.y, z - v.z);
+    return *this;
   }
 
   Vector3 &operator=(const Vector3 &v) {
@@ -53,6 +53,16 @@ public:
     y = v.y;
     z = v.z;
     return *this;
+  }
+
+  Vector3 &operator*=(const real &scalar) {
+    x *= scalar;
+    y *= scalar;
+    z *= scalar;
+    return *this;
+  }
+  Vector3 operator*(const real &scalar) {
+    return Vector3(x * scalar, y * scalar, z * scalar);
   }
 };
 
@@ -87,13 +97,13 @@ public:
     const Quaternion &tmp = *this;
     Quaternion result;
     result.r = tmp.r * multiplier.r - tmp.i * multiplier.i -
-             tmp.j * multiplier.j - tmp.k * multiplier.k;
+               tmp.j * multiplier.j - tmp.k * multiplier.k;
     result.i = tmp.r * multiplier.i + tmp.i * multiplier.r +
-             tmp.j * multiplier.k - tmp.k * multiplier.j;
+               tmp.j * multiplier.k - tmp.k * multiplier.j;
     result.j = tmp.r * multiplier.j - tmp.i * multiplier.k +
-             tmp.j * multiplier.r + tmp.k * multiplier.i;
+               tmp.j * multiplier.r + tmp.k * multiplier.i;
     result.k = tmp.r * multiplier.k + tmp.i * multiplier.j -
-             tmp.j * multiplier.i + tmp.k * multiplier.r;
+               tmp.j * multiplier.i + tmp.k * multiplier.r;
     return result;
   }
   Quaternion &operator*=(const Quaternion &multiplier) {
@@ -109,17 +119,18 @@ public:
     return (*this);
   }
   /*
-  * Rotate quaternion using a vector
-  * @param vector - Rotation Vector
-  */
-  void rotateByVector(const Vector3 &v){
-      Quaternion tmp(0, v.x, v.y, v.z);
-      *this *= tmp;
+   * Rotate quaternion using a vector
+   * @param vector - Rotation Vector
+   */
+  void rotateByVector(const Vector3 &v) {
+    Quaternion tmp(0, v.x, v.y, v.z);
+    *this *= tmp;
   }
   /**
   Used to rotate  q quaternion over time
   @param vector -The vector to add
   @param scale -The amount of the vector to add
+  q = q + wq * 0.5 * dt
   **/
   void addScaledVector(const Vector3 &v, real scale) {
     Quaternion qtemp(0, v.x * scale, v.y * scale, v.z * scale);
@@ -129,7 +140,6 @@ public:
     j += qtemp.j * 0.5;
     k += qtemp.k * 0.5;
   }
-
 };
 class Matrix3 {
 public:

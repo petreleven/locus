@@ -210,11 +210,14 @@ void Matrix4::setOrientation(const Quaternion &q, const Vector3 &pos) {
   data[10] = 1 - (2 * q.i * q.i + 2 * q.j * q.j);
   data[11] = pos.z;
 }
+
+//Convert  local point to world coordinates
 Vector3 Matrix4::localToWorld(const Vector3 &v,
                               const Matrix4 &transform) const {
   return transform.transform(v);
 }
 
+//Convert  world point to local coordinates
 Vector3 Matrix4::worldToLocal(const Vector3 &v,
                               const Matrix4 &transform) const {
   /*Matrix4 invM;

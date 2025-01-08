@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <math.h>
+#include <raylib.h>
 #include <sys/types.h>
 #include <tuple>
 #include <vector>
@@ -17,6 +18,11 @@ public:
   static locus::real Magnitude(const locus::Vector3 &v) {
     return sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
   }
+
+  static locus::real SquareMagnitude(const locus::Vector3 &v) {
+    return (v.x * v.x + v.y * v.y + v.z * v.z);
+  }
+
   static locus::real Magnitude(const locus::Point &v) {
     return sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
   }
